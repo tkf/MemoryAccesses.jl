@@ -38,10 +38,11 @@ end
 Base.@propagate_inbounds accesslength(tid) = LENGTHS[8*tid]
 
 MemoryAccesses.isfull() =
-    any(length(a) == accesslength(tid) for (tid, a) in enumerate(ACCESSES))
+    any(length(a) < accesslength(tid) for (tid, a) in enumerate(ACCESSES))
 
 function checkfull()
     MemoryAccesses.isfull() || return
+    n = length(ACCESSES[1])
     @warn """
     Buffer is full. Call `MemoryAccesses.clear(n)` to increase the buffer size.
     Currently, `n = $n`.
@@ -50,7 +51,7 @@ end
 
 function MemoryAccesses.view()
     checkfull()
-    return [view(a, 1:accesslength(tid)) for (tid, a) in enumerate(ACCESSES)]
+    return [@view(a[1:min(end, accesslength(tid))]) for (tid, a) in enumerate(ACCESSES)]
 end
 
 MemoryAccesses.copy() = map(copy, MemoryAccesses.view())
