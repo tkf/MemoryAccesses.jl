@@ -1,8 +1,13 @@
 module Plotter
 
-using Dates: Dates, Microsecond, Nanosecond
+using Dates: Dates, Period, Microsecond, Nanosecond
 using RecipesBase
 using ..Internal: AccessRecordTable, MemoryAccesses
+
+function rescale(t::Period, unit::Type{<:Period})
+    t, u = promote(t, unit(1))
+    return t / u
+end
 
 @recipe function plot(rec::AccessRecordTable; timeunit = Microsecond)
     color --> rec.threadid
@@ -16,7 +21,7 @@ using ..Internal: AccessRecordTable, MemoryAccesses
 
     lb = minimum(rec.ptr)
     ys = rec.ptr .- lb
-    xs = Dates.value.(round.(Nanosecond.(rec.time .- rec.time[1]), timeunit))
+    xs = rescale(Nanosecond(1), timeunit) .* (rec.time .- rec.time[1])
 
     (xs, ys)
 end
