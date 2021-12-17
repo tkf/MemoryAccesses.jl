@@ -19,8 +19,8 @@ end
     label --> nothing
     markershape --> :x
 
-    lb = minimum(rec.ptr)
-    ys = rec.ptr .- lb
+    lb = minimum(rec.access)
+    ys = rec.access .- lb
     xs = rescale(Nanosecond(1), timeunit) .* (rec.time .- rec.time[1])
 
     (xs, ys)

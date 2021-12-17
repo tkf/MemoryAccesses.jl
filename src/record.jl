@@ -18,6 +18,8 @@ function MemoryAccesses.init(n = 2^10)
         resize!(a, n)
         fill!(a, ThreadLocalAccessRecord(0, 0))
     end
+    init_reference()
+    return
 end
 
 function MemoryAccesses.clear()
@@ -25,6 +27,8 @@ function MemoryAccesses.clear()
     for a in ACCESSES
         fill!(a, ThreadLocalAccessRecord(0, 0))
     end
+    clear_reference()
+    return
 end
 
 MemoryAccesses.record(ptr) = MemoryAccesses.record(UInt(ptr))
@@ -51,7 +55,12 @@ end
 
 function MemoryAccesses.view()
     checkfull()
-    return [@view(a[1:min(end, accesslength(tid))]) for (tid, a) in enumerate(ACCESSES)]
+    accesses = [@view(a[1:min(end, accesslength(tid))]) for (tid, a) in enumerate(ACCESSES)]
+    references = Iterators.flatten(REFERENCES)
+    return (; accesses, references)
 end
 
-MemoryAccesses.copy() = map(copy, MemoryAccesses.view())
+function MemoryAccesses.copy()
+    v = MemoryAccesses.view()
+    return (; accesses = map(copy, v.accesses), references = collect(v.references))
+end
