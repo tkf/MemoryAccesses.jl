@@ -28,8 +28,8 @@ function two_arrays_dac(indices::AbstractUnitRange, xs, ys)
     if length(indices) == 0
     elseif length(indices) == 1
         i = indices[1]
-        MemoryAccesses.record(pointer(xs, i))
-        MemoryAccesses.record(pointer(ys, i))
+        MemoryAccesses.record(@inbounds view(xs, i:i))
+        MemoryAccesses.record(@inbounds view(ys, i:i))
     else
         f = first(indices)
         l = last(indices)
