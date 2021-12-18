@@ -31,6 +31,20 @@ function MemoryAccesses.clear()
     return
 end
 
+"""
+    MemoryAccesses.record(x)
+
+Record that `x` is accessed.
+
+* If `x` is an array, `pointer(x, 1)` is recorded.
+  (TODO: record the first and the last pointers?)
+* Otherwise `x` is assumed to be convertable to an `UInt` (e.g., `Ptr`) whose
+  value is recorded.
+"""
+MemoryAccesses.record
+
+MemoryAccesses.record(xs::AbstractArray) = MemoryAccesses.record(pointer(xs, 1))
+
 MemoryAccesses.record(ptr) = MemoryAccesses.record(UInt(ptr))
 function MemoryAccesses.record(ptr::UInt)
     tid = Threads.threadid()
