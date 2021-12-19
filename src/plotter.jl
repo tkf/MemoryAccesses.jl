@@ -1,29 +1,23 @@
-module Plotter
+module RecipesInterop
 
-using Dates: Dates, Period, Microsecond, Nanosecond
+using ..Internal: AccessRecordTable, MemoryAccesses, Plot2D
+using Dates: Microsecond
 using RecipesBase
-using ..Internal: AccessRecordTable, MemoryAccesses
 
-function rescale(t::Period, unit::Type{<:Period})
-    t, u = promote(t, unit(1))
-    return t / u
-end
-
-@recipe function plot(rec::AccessRecordTable; timeunit = Microsecond)
-    color --> rec.threadid
+@recipe function plot(plt::Plot2D)
+    color --> plt.color.data
     seriestype --> :scatter
 
-    unitstr = replace(string(timeunit(0)), r"^0 +" => "")
-    xlabel --> "Time [$unitstr]"
-    ylabel --> "Memory location"
+    xlabel --> plt.x.title
+    ylabel --> plt.y.title
     label --> nothing
     markershape --> :x
 
-    lb = minimum(rec.access)
-    ys = rec.access .- lb
-    xs = rescale(Nanosecond(1), timeunit) .* (rec.time .- rec.time[1])
+    (plt.x.data, plt.y.data)
+end
 
-    (xs, ys)
+@recipe function plot(table::AccessRecordTable; timeunit = Microsecond)
+    MemoryAccesses.location_time(table; timeunit = timeunit)
 end
 
 end  # module

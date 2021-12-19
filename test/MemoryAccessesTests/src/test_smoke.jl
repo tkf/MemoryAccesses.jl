@@ -5,12 +5,16 @@ using MemoryAccesses
 using Plots
 using Test
 
-function test_show()
-    table = MemoryAccesses.table(schedule_timings(100))
+function shows_something(mime, obj)
     io = IOBuffer()
     origin = position(io)
-    show(io, "text/plain", table)
-    @test position(io) > origin
+    show(io, mime, obj)
+    return position(io) > origin
+end
+
+function test_show()
+    table = MemoryAccesses.table(schedule_timings(100))
+    @test shows_something("text/plain", table)
 end
 
 function test_plot()
@@ -21,11 +25,9 @@ end
 
 function check_plot(transform::Symbol)
     table = MemoryAccesses.table(schedule_timings(100); transform = transform)
-    plt = plot(table)
-    io = IOBuffer()
-    origin = position(io)
-    show(io, "image/png", plt)
-    @test position(io) > origin
+    @test shows_something("image/png", plot(table))
+    @test shows_something("image/png", MemoryAccesses.location_time(table))
+    @test shows_something("text/plain", MemoryAccesses.location_time(table))
 end
 
 end  # module
