@@ -1,4 +1,5 @@
 struct ReferenceRecord
+    # TODO: change it to `base` and `bound`
     first::UInt
     last::UInt
     metadata::Any

@@ -19,6 +19,10 @@ using ..MemoryAccesses: MemoryAccesses
 import Tables
 using AutoHashEquals: @auto_hash_equals
 
+if !@isdefined(Returns)
+    Returns(x) = (_args...; _kwargs...) -> x
+end
+
 include("record.jl")
 include("reference.jl")
 include("table.jl")
