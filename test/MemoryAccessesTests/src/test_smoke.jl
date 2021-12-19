@@ -14,7 +14,13 @@ function test_show()
 end
 
 function test_plot()
-    table = MemoryAccesses.table(schedule_timings(100))
+    @testset for transform in [:collapse, :pack, :none]
+        check_plot(transform)
+    end
+end
+
+function check_plot(transform::Symbol)
+    table = MemoryAccesses.table(schedule_timings(100); transform = transform)
     plt = plot(table)
     io = IOBuffer()
     origin = position(io)
