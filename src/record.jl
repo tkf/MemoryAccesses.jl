@@ -3,6 +3,7 @@ const TimeNS = typeof(time_ns())
 struct ThreadLocalAccessRecord
     ptr::UInt
     time::TimeNS
+    tag::UInt
 end
 
 const ACCESSES = Vector{ThreadLocalAccessRecord}[]
@@ -16,7 +17,7 @@ function MemoryAccesses.init(n = 2^10)
     fill!(LENGTHS, 0)
     for a in ACCESSES
         resize!(a, n)
-        fill!(a, ThreadLocalAccessRecord(0, 0))
+        fill!(a, ThreadLocalAccessRecord(0, 0, 0))
     end
     init_reference()
     return
@@ -25,14 +26,14 @@ end
 function MemoryAccesses.clear()
     fill!(LENGTHS, 0)
     for a in ACCESSES
-        fill!(a, ThreadLocalAccessRecord(0, 0))
+        fill!(a, ThreadLocalAccessRecord(0, 0, 0))
     end
     clear_reference()
     return
 end
 
 """
-    MemoryAccesses.record(x)
+    MemoryAccesses.record(x, [tag = UInt(0)])
 
 Record that `x` is accessed.
 
@@ -40,16 +41,20 @@ Record that `x` is accessed.
   (TODO: record the first and the last pointers?)
 * Otherwise `x` is assumed to be convertable to an `UInt` (e.g., `Ptr`) whose
   value is recorded.
+
+Optionally, arbitrary value `tag` that is convertable to an `UInt` can be passed
+as the second argument.
 """
 MemoryAccesses.record
 
-MemoryAccesses.record(xs::AbstractArray) = MemoryAccesses.record(pointer(xs, 1))
+MemoryAccesses.record(xs::AbstractArray, tag = UInt(0)) =
+    MemoryAccesses.record(pointer(xs, 1), tag)
 
-MemoryAccesses.record(ptr) = MemoryAccesses.record(UInt(ptr))
-function MemoryAccesses.record(ptr::UInt)
+MemoryAccesses.record(ptr, tag = UInt(0)) = MemoryAccesses.record(UInt(ptr), tag)
+function MemoryAccesses.record(ptr::UInt, tag = UInt(0))
     tid = Threads.threadid()
     i = LENGTHS[8*tid] += 1
-    ACCESSES[tid][min(i, end)] = ThreadLocalAccessRecord(ptr, time_ns())
+    ACCESSES[tid][min(i, end)] = ThreadLocalAccessRecord(ptr, time_ns(), UInt(tag))
     return
 end
 

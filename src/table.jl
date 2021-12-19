@@ -2,6 +2,7 @@
     access::Vector{UInt}
     time::Vector{TimeNS}
     threadid::Vector{Int}
+    tag::Vector{UInt}
     referenceid::Vector{Int}
 end
 
@@ -50,6 +51,7 @@ function MemoryAccesses.table(record = MemoryAccesses.view(); transform::Symbol 
         Vector{UInt}(undef, n),
         Vector{TimeNS}(undef, n),
         Vector{Int}(undef, n),
+        Vector{UInt}(undef, n),
         Vector{Int}(undef, n),
     )
 
@@ -73,6 +75,7 @@ function fill_table!(accessid, table, accesses)
                 table.access[j], table.referenceid[j] = accessid(r.ptr)
                 table.time[j] = r.time
                 table.threadid[j] = tid
+                table.tag[j] = r.tag
             end
             j += 1
         end
